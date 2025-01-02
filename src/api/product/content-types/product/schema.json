@@ -1,0 +1,71 @@
+{
+  "kind": "collectionType",
+  "collectionName": "products",
+  "info": {
+    "singularName": "product",
+    "pluralName": "products",
+    "displayName": "Product",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "name": {
+      "type": "string"
+    },
+    "details": {
+      "type": "text"
+    },
+    "price_per_day": {
+      "type": "float"
+    },
+    "is_available": {
+      "type": "boolean"
+    },
+    "images": {
+      "type": "media",
+      "multiple": true,
+      "required": false,
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ]
+    },
+    "available_units": {
+      "type": "integer"
+    },
+    "discount": {
+      "type": "float"
+    },
+    "product_categories": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::product-category.product-category",
+      "inversedBy": "products"
+    },
+    "for": {
+      "type": "enumeration",
+      "enum": [
+        "rent",
+        "sale"
+      ],
+      "default": "rent"
+    },
+    "advanced_details": {
+      "type": "richtext"
+    },
+    "suggestions": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::product.product"
+    },
+    "excl_vat": {
+      "type": "boolean",
+      "default": false
+    }
+  }
+}

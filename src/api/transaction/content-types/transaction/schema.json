@@ -1,0 +1,52 @@
+{
+  "kind": "collectionType",
+  "collectionName": "transactions",
+  "info": {
+    "singularName": "transaction",
+    "pluralName": "transactions",
+    "displayName": "Transaction",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "transaction_date": {
+      "type": "date"
+    },
+    "return_date": {
+      "type": "date"
+    },
+    "total_price": {
+      "type": "float"
+    },
+    "customer_name": {
+      "type": "string"
+    },
+    "shipping": {
+      "type": "boolean"
+    },
+    "token": {
+      "type": "string"
+    },
+    "transaction_items": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::transaction-item.transaction-item",
+      "mappedBy": "transaction"
+    },
+    "customer_email": {
+      "type": "email"
+    },
+    "address": {
+      "type": "string"
+    },
+    "details": {
+      "type": "text"
+    },
+    "phone_number": {
+      "type": "string"
+    }
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "kind": "collectionType",
+  "collectionName": "offline_orders",
+  "info": {
+    "singularName": "offline-order",
+    "pluralName": "offline-orders",
+    "displayName": "Offline Order"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "transaction": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::transaction.transaction"
+    }
+  }
+}
