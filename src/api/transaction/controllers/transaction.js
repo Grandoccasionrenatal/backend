@@ -56,6 +56,8 @@ module.exports = createCoreController('api::transaction.transaction', ({strapi})
                 })
             )
 
+            
+
             const stripeSessionData = {
                 mode: "payment",
                 success_url: `${process.env.CLIENT_URL}?success=true`,

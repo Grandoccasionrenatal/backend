@@ -63,6 +63,7 @@ const offlineOrder = await strapi.service("api::offline-order.offline-order").cr
 
 await strapi.plugins['email'].services.email.send({
   to: process.env.ADMIN_EMAIL,
+
   from: 'info@grandoccasionrental.ie',
   subject: 'New Offline Order for Grand Occassion',
   text: `

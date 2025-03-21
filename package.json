@@ -2,7 +2,6 @@
   "name": "grand-occasion-admin",
   "private": true,
   "version": "0.1.0",
- 
   "description": "A Strapi application",
   "scripts": {
     "develop": "strapi develop",
@@ -11,6 +10,7 @@
     "strapi": "strapi"
   },
   "dependencies": {
+    "@joshmeads/strapi-provider-email-postmark": "^4.4.5",
     "@strapi/plugin-i18n": "4.12.7",
     "@strapi/plugin-users-permissions": "4.12.7",
     "@strapi/provider-email-sendgrid": "^4.13.4",
@@ -21,6 +21,7 @@
     "node-postgres": "^0.6.2",
     "pg": "^8.11.2",
     "postgres": "^3.3.5",
+    "postmark": "^4.0.5",
     "strapi-provider-email-resend": "^1.0.4",
     "strapi-provider-upload-do": "^3.6.9",
     "stripe": "^12.18.0"
