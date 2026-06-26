@@ -1,95 +1,105 @@
 'use strict';
 
-/**
- * offline-order controller
- */
-
-// @ts-ignore
 const { createCoreController } = require('@strapi/strapi').factories;
 
-module.exports = createCoreController('api::offline-order.offline-order', ({strapi})=>({
-  async create(ctx){
+module.exports = createCoreController('api::offline-order.offline-order', ({ strapi }) => ({
+  async create(ctx) {
     const {
       customer_name,
       customer_email,
       address,
       transaction_items,
       phone_number,
-      details,
-  } = ctx.request.body;
+      details
+    } = ctx.request.body;
 
-  if (transaction_items?.length === 0) {
-    ctx.response.status = 400;
-    return { error: "No items have been selected." };
-}
-
-try{
-
-  const createdTransaction = await strapi.service("api::transaction.transaction").create({
-    data: {
-        customer_name,
-        customer_email,
-        address,
-        phone_number,
-        details
+    if (!transaction_items?.length) {
+      ctx.response.status = 400;
+      return { error: 'No items have been selected.' };
     }
-});
 
-for (const transaction_item of transaction_items) {
-    await strapi.service("api::transaction-item.transaction-item").create({
-       data: {
-        units: transaction_item?.units,
-        total_price: transaction_item?.total_price,
-        transaction: [createdTransaction?.id],
-        product: [transaction_item?.product?.id]
-       }
-    });
-}
-
-for (const transaction_item of transaction_items) {
-    await strapi.entityService.update("api::product.product", transaction_item?.product?.id, {
+    try {
+      const createdTransaction = await strapi.service('api::transaction.transaction').create({
         data: {
-            available_units: transaction_item?.product?.attributes?.available_units - transaction_item?.units,
-            is_available: (transaction_item?.product?.attributes?.available_units - transaction_item?.units) > 0
+          customer_name,
+          customer_email,
+          address,
+          phone_number,
+          details
         }
-    })
-}
+      });
 
-const offlineOrder = await strapi.service("api::offline-order.offline-order").create({
-  data: {
-    transaction: [createdTransaction?.id]
-  }
-})
+      for (const item of transaction_items) {
+        await strapi.service('api::transaction-item.transaction-item').create({
+          data: {
+            units: item?.units,
+            total_price: item?.total_price,
+            transaction: [createdTransaction?.id],
+            product: [item?.product?.id]
+          }
+        });
+      }
 
-await strapi.plugins['email'].services.email.send({
-  to: process.env.ADMIN_EMAIL,
+      for (const item of transaction_items) {
+        await strapi.entityService.update('api::product.product', item?.product?.id, {
+          data: {
+            available_units: item?.product?.attributes?.available_units - item?.units,
+            is_available: (item?.product?.attributes?.available_units - item?.units) > 0
+          }
+        });
+      }
 
-  from: 'info@grandoccasionrental.ie',
-  subject: 'New Offline Order for Grand Occassion',
-  text: `
-    A new offline order has been made,
+      const offlineOrder = await strapi.service('api::offline-order.offline-order').create({
+        data: { transaction: [createdTransaction?.id] }
+      });
 
-    The offline order ID is ${offlineOrder?.id}
+      // Build items list for email
+      const itemsList = transaction_items
+        .map((i) => `  • ${i?.product?.attributes?.name ?? 'Product'} x${i?.units} — €${(i?.total_price ?? 0).toFixed(2)}`)
+        .join('\n');
 
-    The Linked transaction ID is ${createdTransaction?.id}
+      const estimatedTotal = transaction_items
+        .reduce((acc, i) => acc + (i?.total_price ?? 0) * (i?.units ?? 1), 0);
 
-    customer name - ${customer_name}
+      await strapi.plugins['email'].services.email.send({
+        to: process.env.ADMIN_EMAIL,
+        from: 'info@grandoccasionrental.ie',
+        subject: `📦 New Booking Enquiry — ${customer_name}`,
+        text: `
+NEW BOOKING ENQUIRY — Grand Occasion Rental Limited
+====================================================
 
-    customer email - ${customer_email}
+CUSTOMER DETAILS
+----------------
+Name:          ${customer_name}
+Email:         ${customer_email}
+Phone:         ${phone_number}
 
-    customer phone number - ${phone_number}
+EVENT & DELIVERY
+----------------
+Address:       ${address || 'Not provided'}
+${details ? `Details:       ${details}` : ''}
 
-    customer address - ${address}
+ITEMS REQUESTED
+---------------
+${itemsList}
 
-    more details -${details}
-  `,
-});
+Estimated Total: €${estimatedTotal.toFixed(2)} (excl. delivery)
 
-return {status: 'created'}
+BOOKING REFERENCE
+-----------------
+Offline Order ID:  #${offlineOrder?.id}
+Transaction ID:    #${createdTransaction?.id}
 
-}catch(err){
-            console.log('err:', JSON.stringify(err))
-            ctx.response.status = 500
-        }
+====================================================
+Reply to this email or call ${customer_name} on ${phone_number} to confirm the booking.
+        `.trim()
+      });
+
+      return { status: 'created' };
+    } catch (err) {
+      console.error('Offline order error:', JSON.stringify(err));
+      ctx.response.status = 500;
+    }
   }
 }));
