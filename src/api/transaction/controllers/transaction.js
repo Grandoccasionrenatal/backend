@@ -50,7 +50,7 @@ module.exports = createCoreController('api::transaction.transaction', ({strapi})
                                     name: `${product?.name} (${item?.product?.images?.data[0]?.attributes?.excl_vat ? `No VAT included` :  `includes ${23}% VAT`})`,
                                     images: [item?.product?.images?.data[0]?.attributes?.url],
                                 },
-                                unit_amount: Math.round((item?.total_price / 2) * 100),
+                                unit_amount: Math.round(item?.total_price * 0.3 * 100),
                             },
                             quantity: item?.units,
                         }
@@ -82,7 +82,7 @@ module.exports = createCoreController('api::transaction.transaction', ({strapi})
                         name: `Shipping`,
                         images: []
                     },
-                    unit_amount: Number(distance) < 10 ? Math.round(Number(process.env.SHIPPING_FEE_FIXED) * 100) : Math.round(Number(process.env.SHIPPING_FEE) * Number(`${distance}`) * 100)
+                    unit_amount: Number(distance) < 10 ? Math.round(Number(process.env.SHIPPING_FEE_FIXED) * 0.3 * 100) : Math.round(Number(process.env.SHIPPING_FEE) * Number(`${distance}`) * 0.3 * 100)
                 },
                 quantity: 1
                 }]
