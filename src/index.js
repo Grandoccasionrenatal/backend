@@ -16,5 +16,26 @@ module.exports = {
    * This gives you an opportunity to set up your data model,
    * run jobs, or perform some special logic.
    */
-  bootstrap(/*{ strapi }*/) {},
+  async bootstrap({ strapi }) {
+    // One-time: set vat_rate=13.5 on all marquee products, 23 on all others
+    try {
+      const products = await strapi.entityService.findMany('api::product.product', {
+        fields: ['id', 'name', 'vat_rate'],
+        pagination: { limit: -1 },
+      });
+
+      for (const product of products) {
+        const isMarquee = /marquee/i.test(product.name || '');
+        const correctRate = isMarquee ? 13.5 : 23;
+        if (product.vat_rate !== correctRate) {
+          await strapi.entityService.update('api::product.product', product.id, {
+            data: { vat_rate: correctRate },
+          });
+        }
+      }
+      console.log('[bootstrap] VAT rates updated for all products');
+    } catch (err) {
+      console.error('[bootstrap] VAT rate update failed:', err?.message);
+    }
+  },
 };
