@@ -28,7 +28,8 @@ module.exports = createCoreController('api::transaction.transaction', ({strapi})
             customer_email,
             distance,
             address,
-            details
+            details,
+            success_url
         } = ctx.request.body;
 
         if (transaction_items?.length === 0 && !details) {
@@ -71,7 +72,7 @@ module.exports = createCoreController('api::transaction.transaction', ({strapi})
 
             const stripeSessionData = {
                 mode: "payment",
-                success_url: `${process.env.CLIENT_URL}?success=true`,
+                success_url: success_url || `${process.env.CLIENT_URL}?success=true`,
                 cancel_url: `${process.env.CLIENT_URL}?success=false`,
                 line_items: shipping ?
                 [...lineItems, {
