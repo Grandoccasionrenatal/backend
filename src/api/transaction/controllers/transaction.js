@@ -27,34 +27,45 @@ module.exports = createCoreController('api::transaction.transaction', ({strapi})
             transaction_items,
             customer_email,
             distance,
-            address
+            address,
+            details
         } = ctx.request.body;
 
-        if (transaction_items?.length === 0) {
+        if (transaction_items?.length === 0 && !details) {
             ctx.response.status = 400;
             return { error: "No items have been selected." };
         }
 
         try{
-            const lineItems = await Promise.all(
-                transaction_items?.map(async(item)=> {
-                    const product = await strapi.service("api::product.product").findOne(item?.product?.id)
+            const lineItems = transaction_items?.length > 0
+                ? await Promise.all(
+                    transaction_items?.map(async(item)=> {
+                        const product = await strapi.service("api::product.product").findOne(item?.product?.id)
 
-
-                    return {
-                        price_data: {
-                            currency: "eur",
-                            product_data: {
-                                name: `${product?.name} (${item?.product?.images?.data[0]?.attributes?.excl_vat ? `No VAT included` :  `includes ${23}% VAT`})`,
-                                images: [item?.product?.images?.data[0]?.attributes?.url],
-
+                        return {
+                            price_data: {
+                                currency: "eur",
+                                product_data: {
+                                    name: `${product?.name} (${item?.product?.images?.data[0]?.attributes?.excl_vat ? `No VAT included` :  `includes ${23}% VAT`})`,
+                                    images: [item?.product?.images?.data[0]?.attributes?.url],
+                                },
+                                unit_amount: Math.round((item?.total_price / 2) * 100),
                             },
-                            unit_amount: Math.round((item?.total_price / 2) * 100),
+                            quantity: item?.units,
+                        }
+                    })
+                )
+                : [{
+                    price_data: {
+                        currency: "eur",
+                        product_data: {
+                            name: details || "Enquiry Deposit",
+                            images: [],
                         },
-                        quantity: item?.units,
-                    }
-                })
-            )
+                        unit_amount: Math.round(total_price * 100),
+                    },
+                    quantity: 1,
+                }]
 
             
 
