@@ -66,6 +66,10 @@
     "excl_vat": {
       "type": "boolean",
       "default": false
+    },
+    "vat_rate": {
+      "type": "float",
+      "default": 23
     }
   }
 }
