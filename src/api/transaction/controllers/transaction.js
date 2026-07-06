@@ -29,7 +29,8 @@ module.exports = createCoreController('api::transaction.transaction', ({strapi})
             distance,
             address,
             details,
-            success_url
+            success_url,
+            metadata
         } = ctx.request.body;
 
         if (transaction_items?.length === 0 && !details) {
@@ -97,7 +98,8 @@ module.exports = createCoreController('api::transaction.transaction', ({strapi})
             }
 
         const session = await stripe.checkout.sessions.create(!!customer_email ?
-            {...stripeSessionData, customer_email: customer_email} : {...stripeSessionData}
+            {...stripeSessionData, customer_email: customer_email, ...(metadata ? { metadata } : {})} :
+            {...stripeSessionData, ...(metadata ? { metadata } : {})}
             );
 
          const createdTransaction = await strapi.service("api::transaction.transaction").create({
